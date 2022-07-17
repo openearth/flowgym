@@ -5,9 +5,15 @@ import matplotlib.colors
 import matplotlib.cm
 
 
-def generate_perlin_noise_2d(shape, res=(2, 2), low=0, high=1):
+def generate_perlin_noise_2d(shape, res=(2, 2), low=0, high=1, np_random=None):
     """generate some perlin noise"""
     # based on https://pvigier.github.io/2018/06/13/perlin-noise-numpy.html
+    #
+    # accept random environment as input
+    # if nto specified, use default env
+    if np_random is None:
+        np_random = np.random
+
     def f(t):
         return 6 * t**5 - 15 * t**4 + 10 * t**3
 
@@ -38,10 +44,14 @@ def generate_perlin_noise_2d(shape, res=(2, 2), low=0, high=1):
     return result
 
 
-def generate_uv(shape=(256, 256), low=-1, high=1):
+def generate_uv(shape=(256, 256), low=-1, high=1, np_random=None):
     """generate a uv map with 2 random patterns"""
-    u = generate_perlin_noise_2d(shape=shape[:2], low=low, high=high)
-    v = generate_perlin_noise_2d(shape=shape[:2], low=low, high=high)
+    u = generate_perlin_noise_2d(
+        shape=shape[:2], low=low, high=high, np_random=np_random
+    )
+    v = generate_perlin_noise_2d(
+        shape=shape[:2], low=low, high=high, np_random=np_random
+    )
     uv = np.dstack([u, v])
     return uv.astype(np.float32)
 

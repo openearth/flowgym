@@ -8,6 +8,6 @@ __version__ = "0.1.0"
 from gym.envs.registration import register
 
 register(
-    id="flowgym/FlowWorldEnv",
+    id=f"flowgym/FlowWorldEnv-v{__version__}",
     entry_point="flowgym.envs.flow2d:FlowWorldEnv",
 )

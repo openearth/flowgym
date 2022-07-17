@@ -12,10 +12,12 @@ from flowgym.utils import generate_uv, velocity2rgb
 class FlowWorldEnv(gym.Env):
     metadata = {"render_modes": ["human", "rgb_array"]}
 
-    def __init__(self, grid_size=256, velocity=None):
+    def __init__(self, grid_size=256, velocity=None, normalize=True):
         # resolution is always 1m
         # The size of the grid in m
+        super().__init__()
         self.grid_size = grid_size
+        self.normalize = normalize
 
         # store rendering thing in here
         self.mpl = {}
@@ -28,7 +30,9 @@ class FlowWorldEnv(gym.Env):
 
         # default to 0 velocity field
         if velocity is None:
-            velocity = generate_uv((self.grid_size, self.grid_size))
+            velocity = generate_uv(
+                (self.grid_size, self.grid_size), np_random=self.np_random
+            )
 
         # hidden property for velocity, as the normal way to get access is to
         self._velocity = velocity
@@ -79,14 +83,17 @@ class FlowWorldEnv(gym.Env):
             "target": self._target_position,
             "velocity": self._velocity,
         }
+        if self.normalize:
+            obs["agent"] /= self.grid_size
+            obs["target"] /= self.grid_size
+            obs["velocity"] /= self.grid_size
         return obs
 
     def _get_info(self):
-        return {
-            "distance": np.sqrt(
-                np.sum((self._target_position - self._agent_position) ** 2)
-            )
-        }
+        distance = np.sqrt(np.sum((self._target_position - self._agent_position) ** 2))
+        if self.normalize:
+            distance /= self.grid_size
+        return {"distance": distance}
 
     def reset(self, seed=None, return_info=False, options=None):
         # We need the following line to seed self.np_random
@@ -95,7 +102,7 @@ class FlowWorldEnv(gym.Env):
         # Choose the agent's location uniformly at random
 
         # agent_shape = self.observation_space["agent"].shape
-        self._agent_position = np.random.uniform(
+        self._agent_position = self.np_random.uniform(
             low=0, high=self.grid_size, size=(2,)
         ).astype(self.dtype)
 
@@ -104,10 +111,8 @@ class FlowWorldEnv(gym.Env):
         self._target_position = self._agent_position
         # make sure we don't put target on agent position. If position is different we're done
         while np.array_equal(self._target_position, self._agent_position):
-            self._target_position = np.random.uniform(
-                low=0,
-                high=self.grid_size,
-                size=(2,),
+            self._target_position = self.np_random.uniform(
+                low=0, high=self.grid_size, size=(2,)
             ).astype(self.dtype)
 
         observation = self._get_obs()
@@ -134,8 +139,6 @@ class FlowWorldEnv(gym.Env):
         done = bool(distance_1 < 1)
         # Binary sparse rewards
         reward = distance_0 - distance_1
-        if reward < 0:
-            reward = 0
 
         observation = self._get_obs()
 
@@ -147,15 +150,23 @@ class FlowWorldEnv(gym.Env):
         fig, ax = plt.subplots()
         obs = self._get_obs()
         mpl["fig"], mpl["ax"] = fig, ax
-        mpl["im"] = ax.imshow(velocity2rgb(obs["velocity"]))
-        (mpl["target"],) = ax.plot(*self._target_position, "wx", alpha=1)
-        (mpl["agent"],) = ax.plot(*self._agent_position, "wo", alpha=1)
+
+        extent = np.array((-0.5, self.grid_size - 0.5, self.grid_size - 0.5, -0.5))
+        if self.normalize:
+            extent /= self.grid_size
+        mpl["im"] = ax.imshow(velocity2rgb(obs["velocity"]), extent=extent)
+        (mpl["target"],) = ax.plot(*obs["target"], "wx", alpha=1)
+        (mpl["agent"],) = ax.plot(*obs["agent"], "wo", alpha=1)
 
         s = np.s_[::8, ::8]
-        X, Y = np.meshgrid(np.arange(self.grid_size), np.arange(self.grid_size))
+        XY = np.mgrid[: self.grid_size, : self.grid_size]
+        if self.normalize:
+            XY = XY / self.grid_size
+        X, Y = XY
+
         U = obs["velocity"][..., 0]
         V = obs["velocity"][..., 1]
-        mpl["quiver"] = ax.quiver(U, V)
+        mpl["quiver"] = ax.quiver(X, Y, U, V)
         return mpl
 
     def update_render(self):

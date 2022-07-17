@@ -28,7 +28,7 @@ class FlowWorldEnv(gym.Env):
 
         # default to 0 velocity field
         if velocity is None:
-            velocity = np.zeros((grid_size, grid_size, 2), dtype=self.dtype)
+            velocity = generate_uv((self.grid_size, self.grid_size))
 
         # hidden property for velocity, as the normal way to get access is to
         self._velocity = velocity
@@ -148,8 +148,8 @@ class FlowWorldEnv(gym.Env):
         obs = self._get_obs()
         mpl["fig"], mpl["ax"] = fig, ax
         mpl["im"] = ax.imshow(velocity2rgb(obs["velocity"]))
-        (mpl["target"],) = ax.plot(*self._target_position, "gx", alpha=1)
-        (mpl["agent"],) = ax.plot(*self._agent_position, "go", alpha=1)
+        (mpl["target"],) = ax.plot(*self._target_position, "wx", alpha=1)
+        (mpl["agent"],) = ax.plot(*self._agent_position, "wo", alpha=1)
 
         s = np.s_[::8, ::8]
         X, Y = np.meshgrid(np.arange(self.grid_size), np.arange(self.grid_size))
@@ -163,12 +163,12 @@ class FlowWorldEnv(gym.Env):
         mpl = self.mpl
         obs = self._get_obs()
         mpl["im"].set_data(velocity2rgb(obs["velocity"]))
-        mpl["quiver"].set_data(obs["velocity"])
+        mpl["quiver"].set_UVC(obs["velocity"][..., 0], obs["velocity"][..., 1])
         mpl["target"].set_data(*obs["target"])
         mpl["agent"].set_data(*obs["agent"])
 
     def render(self, mode="human"):
-        """render the current timestep"""
+        """render the current timestep. In human mode on first call don't return the figure, as it will be already shown using the subplots function."""
         assert mode in (
             "human",
             "rgb_array",
@@ -176,16 +176,25 @@ class FlowWorldEnv(gym.Env):
 
         # get the rendered figure
         mpl = self.mpl
+
+        created = False
         # if we don't have a figure yet, create it
         if not mpl:
             self.create_render()
+            created = True
+
         # render our figure
         self.update_render()
 
         fig = mpl["fig"]
 
         if mode == "human":
-            return fig
+            # first call already renders the figure
+            if not created:
+                return fig
+            else:
+                return
+
         elif mode == "rgb_array":
             buf = fig.canvas.buffer_rgba()
             img = np.asarray(buf)

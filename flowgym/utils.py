@@ -38,7 +38,7 @@ def generate_perlin_noise_2d(shape, res=(2, 2), low=0, high=1):
     return result
 
 
-def generate_uv(shape, low, high):
+def generate_uv(shape=(256, 256), low=-1, high=1):
     """generate a uv map with 2 random patterns"""
     u = generate_perlin_noise_2d(shape=shape[:2], low=low, high=high)
     v = generate_perlin_noise_2d(shape=shape[:2], low=low, high=high)

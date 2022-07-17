@@ -22,6 +22,9 @@ class FlowWorldEnv(gym.Env):
         # store rendering thing in here
         self.mpl = {}
 
+        # slice for quivers
+        self._quiver_s = np.s_[::8, ::8]
+
         self.dtype = np.float32
 
         # maximum velocity
@@ -151,31 +154,27 @@ class FlowWorldEnv(gym.Env):
         obs = self._get_obs()
         mpl["fig"], mpl["ax"] = fig, ax
 
-        extent = np.array((-0.5, self.grid_size - 0.5, self.grid_size - 0.5, -0.5))
-        if self.normalize:
-            extent /= self.grid_size
-        mpl["im"] = ax.imshow(velocity2rgb(obs["velocity"]), extent=extent)
-        (mpl["target"],) = ax.plot(*obs["target"], "wx", alpha=1)
-        (mpl["agent"],) = ax.plot(*obs["agent"], "wo", alpha=1)
+        (mpl["target"],) = ax.plot(*obs["target"], "rx", alpha=1)
+        (mpl["agent"],) = ax.plot(*obs["agent"], "ro", alpha=1)
 
-        s = np.s_[::8, ::8]
         XY = np.mgrid[: self.grid_size, : self.grid_size]
         if self.normalize:
             XY = XY / self.grid_size
         X, Y = XY
 
+        s = self._quiver_s
         U = obs["velocity"][..., 0]
         V = obs["velocity"][..., 1]
         # scale is inverted
-        mpl["quiver"] = ax.quiver(X, Y, U, V, units="xy", scale=0.1)
+        mpl["quiver"] = ax.quiver(X[s], Y[s], U[s], V[s], units="xy", scale=0.1)
         return mpl
 
     def update_render(self):
         """update pre-rendered figure"""
         mpl = self.mpl
         obs = self._get_obs()
-        mpl["im"].set_data(velocity2rgb(obs["velocity"]))
-        mpl["quiver"].set_UVC(obs["velocity"][..., 0], obs["velocity"][..., 1])
+        s = self._quiver_s
+        mpl["quiver"].set_UVC(obs["velocity"][s][..., 0], obs["velocity"][s][..., 1])
         mpl["target"].set_data(*obs["target"])
         mpl["agent"].set_data(*obs["agent"])
 

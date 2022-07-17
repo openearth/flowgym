@@ -18,7 +18,8 @@ def env():
 
     See more at: http://doc.pytest.org/en/latest/fixture.html
     """
-    env = gym.make("flowgym/FlowWorldEnv")
+    version = flowgym.__version__
+    env = gym.make(f"flowgym/FlowWorldEnv-v{version}")
     return env
 
 

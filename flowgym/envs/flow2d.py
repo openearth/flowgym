@@ -84,9 +84,9 @@ class FlowWorldEnv(gym.Env):
             "velocity": self._velocity,
         }
         if self.normalize:
-            obs["agent"] /= self.grid_size
-            obs["target"] /= self.grid_size
-            obs["velocity"] /= self.grid_size
+            obs["agent"] = self._agent_position / self.grid_size
+            obs["target"] = self._target_position / self.grid_size
+            obs["velocity"] = self._velocity / self.grid_size
         return obs
 
     def _get_info(self):
@@ -166,7 +166,8 @@ class FlowWorldEnv(gym.Env):
 
         U = obs["velocity"][..., 0]
         V = obs["velocity"][..., 1]
-        mpl["quiver"] = ax.quiver(X, Y, U, V)
+        # scale is inverted
+        mpl["quiver"] = ax.quiver(X, Y, U, V, units="xy", scale=0.1)
         return mpl
 
     def update_render(self):

@@ -26,7 +26,20 @@ OpenAI Gym environment for navigating through flow fields.
 Features
 --------
 
-* TODO
+You can register the environment by importing the captain gym package:
+
+```
+import flowgym
+```
+
+After that the gym environment is available through `gym.make`.
+
+```
+env = gym.make('flowgym/FlowWorldEnv')
+```
+
+
+
 
 Credits
 -------

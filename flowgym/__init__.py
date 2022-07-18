@@ -11,3 +11,8 @@ register(
     id=f"flowgym/FlowWorldEnv-v0",
     entry_point="flowgym.envs.flow2d:FlowWorldEnv",
 )
+
+register(
+    id=f"flowgym/WorldEnv-v0",
+    entry_point="flowgym.envs.flow2d:WorldEnv",
+)

@@ -26,7 +26,7 @@ OpenAI Gym environment for navigating through flow fields.
 Features
 --------
 
-You can register the environment by importing the captain gym package:
+You can register the environment by importing the flowgym package:
 
 ```
 import flowgym
@@ -35,8 +35,15 @@ import flowgym
 After that the gym environment is available through `gym.make`.
 
 ```
-env = gym.make('flowgym/FlowWorldEnv')
+# a gym environment with a velocity field
+env = gym.make('flowgym/FlowWorldEnv-v0')
+
+# gym environment with only source and target
+env = gym.make('flowgym/WorldEnv-v0')
+
 ```
+
+See the notebooks directory for a (non-working) example of how to use the gym in tf-agents.
 
 
 

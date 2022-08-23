@@ -19,28 +19,27 @@ class WorldEnv(gym.Env):
         # The size of the grid in m
         super().__init__()
         self.grid_size = grid_size
+        self.obs_layout_dict = True
 
         # store rendering thing in here
         self.mpl = {}
-
         self.dtype = np.float32
 
         # Observations are dictionaries with the agent's and the target's location.
-        observation_dict = {
-            # # object position
-            "agent": gym.spaces.Box(
-                low=0, high=grid_size, shape=(2,), dtype=self.dtype
-            ),
-            # # target position
-            "target": gym.spaces.Box(
-                low=0, high=grid_size, shape=(2,), dtype=self.dtype
-            ),
-        }
-
-        self.observation_space = gym.spaces.Dict(observation_dict)
-        self.observation_space = gym.spaces.Box(
-            low=0, high=grid_size, shape=(4,), dtype=self.dtype
-        )
+        if self.obs_layout_dict:
+            observation_dict = {
+                # # object position
+                "agent": gym.spaces.Box(
+                    low=0, high=grid_size, shape=(2,), dtype=self.dtype
+                ),
+                # # target position
+                "target": gym.spaces.Box(
+                    low=0, high=grid_size, shape=(2,), dtype=self.dtype
+                ),
+            }
+            self.observation_space = gym.spaces.Dict(observation_dict)
+        else:
+            self.observation_space = gym.spaces.Box(low=0, high=grid_size, shape=(4,), dtype=self.dtype)
 
         # We have 4 actions, corresponding to "right", "up", "left", "down"
         self.action_space = gym.spaces.Discrete(4)
@@ -60,7 +59,12 @@ class WorldEnv(gym.Env):
         }
 
     def _get_obs(self):
-        obs = np.r_[self._agent_position, self._target_position]
+        if self.obs_layout_dict:
+            obs = {}
+            obs["agent"] = self._agent_position
+            obs["target"] = self._target_position
+        else:
+            obs = np.r_[self._agent_position, self._target_position]
         return obs
 
     def _get_info(self):
@@ -140,7 +144,6 @@ class WorldEnv(gym.Env):
     def update_render(self):
         """update pre-rendered figure"""
         mpl = self.mpl
-        obs = self._get_obs()
         mpl["target"].set_data(*self._target_position)
         mpl["agent"].set_data(*self._agent_position)
 

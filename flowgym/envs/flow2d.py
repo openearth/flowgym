@@ -60,10 +60,6 @@ class WorldEnv(gym.Env):
         }
 
     def _get_obs(self):
-        obs = {
-            "agent": self._agent_position,
-            "target": self._target_position,
-        }
         obs = np.r_[self._agent_position, self._target_position]
         return obs
 

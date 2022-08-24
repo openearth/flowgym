@@ -1,11 +1,8 @@
 """A gym environment with velocity field"""
 
 import gym
-
 import numpy as np
-
 import matplotlib.pyplot as plt
-
 from flowgym.utils import generate_uv
 
 
@@ -105,9 +102,7 @@ class FlowWorldEnv(gym.Env):
         # Choose the agent's location uniformly at random
 
         # agent_shape = self.observation_space["agent"].shape
-        self._agent_position = self.np_random.uniform(
-            low=0, high=self.grid_size, size=(2,)
-        ).astype(self.dtype)
+        self._agent_position = self.np_random.uniform(low=0, high=self.grid_size, size=(2,)).astype(self.dtype)
 
         # We will sample the target's location randomly until it does not coincide with the agent's location
 

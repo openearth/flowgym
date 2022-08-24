@@ -6,15 +6,15 @@ import flowgym
 
 
 def train_world_env_with_stable_baselines():
-    env = gym.make('flowgym/WorldEnv-v0')
+    env = gym.make('flowgym/WorldEnv-v0', obs_layout_dict=True)
     env.reset()
 
     tensor_board_log_dir = "logs/WorldEnv-v0"
     policy = PPO('MultiInputPolicy', env, verbose=1, tensorboard_log=tensor_board_log_dir)
 
     policy_dir = "policy_dir/WorldEnv-v0"
-    time_steps = 2000
-    for i in range(50):
+    time_steps = 10000
+    for i in range(100):
         policy.learn(total_timesteps=time_steps, reset_num_timesteps=False, tb_log_name="PPO")
         current_policy_dir = f"{policy_dir}/{time_steps * (i + 1)}"
         policy.save(current_policy_dir)
@@ -23,7 +23,7 @@ def train_world_env_with_stable_baselines():
 def test_world_env_with_stable_baselines():
     # Load the last model
     policy_dir = "policy_dir/WorldEnv-v0"
-    current_policy_dir = f"{policy_dir}/{2000 * 50}"
+    current_policy_dir = f"{policy_dir}/{850000}"
 
     # load policy
     env = gym.make('flowgym/WorldEnv-v0')

@@ -54,12 +54,10 @@ def test_world_env():
     dataset = replay_buffer.as_dataset(sample_batch_size=tf_env.batch_size, num_steps=2)
     iterator = iter(dataset)
 
-    #
     # train
-    #
-    num_train_steps = 50
+    num_train_steps = 100
     losses = []
-    collect_steps_per_iteration = 100
+    collect_steps_per_iteration = 1000
     for _ in range(num_train_steps):
         tf_env.reset()
         for i in range(collect_steps_per_iteration):
@@ -74,14 +72,8 @@ def test_world_env():
         experience, _ = next(iterator)
         loss = agent.train(experience=experience)
         losses.append(loss)
-        if i > num_train_steps * collect_steps_per_iteration:
-            break
 
-    print(losses)
-
-    #
     # test
-    #
     actions = []
     env.reset()
     step = tf_env.reset()

@@ -10,7 +10,7 @@ class WorldEnv(gym.Env):
 
     metadata = {"render_modes": ["human", "rgb_array"]}
 
-    def __init__(self, grid_size=256, obs_layout_dict=True):
+    def __init__(self, grid_size=256, obs_layout_dict=False):
         # resolution is always 1m
         # The size of the grid in m
         super(WorldEnv, self).__init__()
